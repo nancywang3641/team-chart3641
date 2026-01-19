@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>公司組織圖 - 互動折疊版</title>
+    <title>公司組織總表 (王木榮/葉艷秋)</title>
     <style>
         /* --- 基礎設定 --- */
         body {
@@ -10,166 +10,164 @@
             background-color: #f4f6f8;
             padding: 20px;
             color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        /* --- 控制面板 --- */
-        .controls {
-            position: sticky;
-            top: 0;
+        /* --- 頂部控制區 --- */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
             background: white;
             padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 100;
-            display: flex;
-            gap: 10px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        button {
-            padding: 8px 16px;
+        .btn-group button {
+            padding: 8px 15px;
             cursor: pointer;
             border: 1px solid #ddd;
             background: #fff;
             border-radius: 4px;
             font-size: 14px;
+            margin-right: 5px;
+        }
+        .btn-group button:hover { background: #f0f0f0; }
+        .btn-print { background-color: #007bff !important; color: white; border: none !important; }
+        .btn-print:hover { background-color: #0056b3 !important; }
+
+        /* --- Tab 分頁籤設計 --- */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            background: #e9ecef;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
             transition: all 0.2s;
         }
 
-        button:hover { background: #f0f0f0; border-color: #ccc; }
-        
-        .btn-print { background-color: #007bff; color: white; border: none; }
-        .btn-print:hover { background-color: #0056b3; }
+        .tab-btn:hover { background: #dde2e6; }
 
-        .hint { font-size: 12px; color: #666; margin-left: auto; }
+        .tab-btn.active {
+            background: #fff;
+            color: #007bff;
+            border: 2px solid #ddd;
+            border-bottom: 2px solid #fff; /* 蓋過底線 */
+            margin-bottom: -2px;
+        }
+
+        /* --- Tab 內容區 --- */
+        .tab-content { display: none; } /* 預設隱藏 */
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* --- 樹狀結構 --- */
-        ul {
-            list-style: none;
-            padding-left: 20px;
-            margin: 0;
-        }
-
-        /* 連接線系統 */
-        .tree ul {
-            border-left: 1px solid #ccc;
-            margin-left: 5px;
-        }
-        
-        /* 隱藏根節點左側的線 */
+        ul { list-style: none; padding-left: 20px; margin: 0; }
+        .tree ul { border-left: 1px solid #ccc; margin-left: 5px; }
         .tree > ul { border-left: none; padding-left: 0; margin-left: 0; }
-
-        li {
-            margin: 2px 0;
-            position: relative;
-        }
-
-        /* 水平引導線 */
+        
+        li { margin: 5px 0; position: relative; }
         li::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: -20px;
-            width: 15px;
-            height: 1px;
-            background: #ccc;
+            content: ''; position: absolute; top: 18px; left: -20px;
+            width: 15px; height: 1px; background: #ccc;
         }
-        /* 根節點不需要水平線 */
         .tree > ul > li::before { display: none; }
 
-        /* --- 節點內容卡片 --- */
+        /* --- 節點卡片 --- */
         .node-content {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             background: white;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            cursor: pointer; /* 讓滑鼠變成手指 */
-            width: fit-content;
-            transition: background 0.2s;
-            user-select: none; /* 防止點擊時選取文字 */
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s;
         }
+        .node-content:hover { border-color: #2196f3; background: #f0f8ff; }
 
-        .node-content:hover {
-            background-color: #eef6fc;
-            border-color: #2196f3;
-        }
-
-        /* 折疊按鈕樣式 */
+        /* 折疊按鈕 */
         .toggle-btn {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 18px;
-            height: 18px;
-            margin-right: 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #555;
-            background-color: #eee;
-            border: 1px solid #ccc;
+            width: 20px; height: 20px; margin-right: 10px;
+            border-radius: 50%; background: #eee; color: #555;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 14px;
         }
-        
-        /* 沒有子節點時，隱藏折疊鈕但保留佔位，保持對齊 */
-        .toggle-btn.empty {
-            visibility: hidden;
-        }
+        .toggle-btn.empty { visibility: hidden; }
 
-        /* 隱藏狀態 */
-        .hidden { display: none; }
-
-        /* --- 資料標籤 --- */
-        .rank-tag {
-            padding: 2px 6px;
-            font-size: 11px;
-            border-radius: 3px;
-            margin-right: 8px;
-            font-weight: bold;
-            color: #333;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
+        /* 資料文字 */
+        .rank-tag { padding: 2px 8px; font-size: 12px; border-radius: 4px; margin-right: 10px; font-weight: bold; border: 1px solid rgba(0,0,0,0.1); }
+        .name { font-weight: bold; font-size: 15px; margin-right: 8px; }
+        .id { color: #888; font-size: 13px; font-family: monospace; margin-right: 10px; }
+        .date { color: #aaa; font-size: 12px; }
+        .count { font-size: 11px; color: #fff; background: #999; padding: 1px 6px; border-radius: 10px; margin-left: 8px; }
 
         /* 顏色定義 */
-        .dia { background: #b3e5fc; border-color: #00b4d8; }
-        .pla { background: #e0f7fa; border-color: #90e0ef; }
-        .gold { background: #fff9c4; border-color: #ffd166; }
-        .sil { background: #f5f5f5; border-color: #c0c0c0; }
-        .vip { background: #fce4ec; border-color: #ff006e; }
-        
-        .name { font-weight: bold; font-size: 14px; margin-right: 8px; }
-        .id { color: #666; font-size: 12px; font-family: monospace; }
-        .count { font-size: 11px; color: #999; margin-left: 8px; background: #eee; padding: 1px 5px; border-radius: 10px;}
+        .dia { background: #b3e5fc; border-color: #00b4d8; color: #0077b6; }
+        .pla { background: #e0f7fa; border-color: #90e0ef; color: #0096c7; }
+        .gold { background: #fff9c4; border-color: #ffd166; color: #b45309; }
+        .sil { background: #f5f5f5; border-color: #c0c0c0; color: #666; }
+        .vip { background: #fce4ec; border-color: #ff006e; color: #a4133c; }
+        .emp { background: #eee; border: 1px dashed #ccc; color: #999; }
 
-        /* --- 列印設定 (關鍵！) --- */
+        .hidden { display: none; }
+
+        /* --- 列印設定 (關鍵) --- */
         @media print {
-            .controls { display: none; } /* 列印時隱藏按鈕區 */
-            body { background: white; padding: 0; }
-            .node-content { border: none; border-bottom: 1px solid #eee; padding: 4px 0; }
-            
-            /* 關鍵：列印時，只印出目前展開的東西，隱藏的東西就不印 */
-            .hidden { display: none !important; }
-            
-            /* 強制列印背景色 */
+            .header-controls, .tab-nav { display: none; } /* 隱藏按鈕和頁籤 */
+            body { background: white; margin: 0; padding: 0; max-width: 100%; }
+            .tab-content { display: none !important; } /* 先隱藏所有內容 */
+            .tab-content.active { display: block !important; } /* 只顯示當前頁籤 */
+            .node-content { border: none; border-bottom: 1px solid #eee; padding: 5px 0; box-shadow: none; }
+            .hidden { display: none !important; } /* 隱藏折疊的節點 */
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <button class="btn-print" onclick="window.print()">🖨️ 列印目前畫面</button>
-    <button onclick="expandAll()">全部展開</button>
-    <button onclick="collapseAll()">全部折疊</button>
-    <div class="hint">💡 點擊「+」號或名字可展開/折疊。列印時只會印出您目前有點開的部分。</div>
+<div class="header-controls">
+    <div style="font-weight: bold; font-size: 18px;">組織結構總覽</div>
+    <div class="btn-group">
+        <button class="btn-print" onclick="window.print()">🖨️ 列印目前分頁</button>
+        <button onclick="expandAll()">全部展開</button>
+        <button onclick="collapseAll()">全部折疊</button>
+    </div>
 </div>
 
-<div id="tree-root" class="tree"></div>
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('wang', this)">👑 王木榮 團隊</button>
+    <button class="tab-btn" onclick="switchTab('yeh', this)">🌿 葉艷秋 團隊</button>
+</div>
+
+<div id="wang" class="tab-content active">
+    <div id="tree-wang" class="tree"></div>
+</div>
+
+<div id="yeh" class="tab-content">
+    <div id="tree-yeh" class="tree"></div>
+</div>
 
 <script>
-    const rawData = `
+    // --- 1. 資料區 (Data) ---
+
+    // 王木榮的資料 (使用舊格式 【】)
+    const rawDataWang = `
 【王木榮】 (OV25120039) - 鑽石 - 加入: 2025-12-14
 ├── 【王木榮】 (OV25120040) - 白金 - 加入: 2025-12-13
 │   ├── 【王木榮】 (OV25120041) - 白金 - 加入: 2025-12-13
@@ -334,27 +332,91 @@
         └── 【王浩宇】 (TW26010168) - VIP - 加入: 2026-01-14
     `;
 
-    // 構建樹狀資料
-    function buildTreeFromText(text) {
+    // 葉艷秋的資料 (使用新格式 No Brackets)
+    const rawDataYeh = `
+葉艷秋 (OV25120051) - 鑽石 - 加入日期: 2025-12-13
+    ├── 王聆朱 (OV25120053) - 銀級 - 加入日期: 2025-12-13
+    │   ├── 楊玉環 (OV25120327) - 白金 - 加入日期: 2025-12-26
+    │   │   ├── 楊玉環 (OV25120328) - 白金 - 加入日期: 2025-12-26
+    │   │   │   ├── 楊玉珍 (OV25120331) - 銀級 - 加入日期: 2025-12-26
+    │   │   │   │   ├── 劉思妤 (OV25120332) - 銅級 - 加入日期: 2025-12-26
+    │   │   │   │   └── (空缺)
+    │   │   │   └── 張庭慈 (OV25120362) - 金級 - 加入日期: 2025-12-29
+    │   │   └── 楊玉環 (OV25120329) - 白金 - 加入日期: 2025-12-26
+    │   │       ├── (空缺)
+    │   │       └── 鄭滿 (OV25120330) - 銀級 - 加入日期: 2025-12-26
+    │   │           ├── (空缺)
+    │   │           └── 吳金燕 (OV25120333) - 金級 - 加入日期: 2025-12-26
+    │   └── 葉賀吉 (OV25120213) - 銀級 - 加入日期: 2025-12-21
+    │       ├── 蕭金蓉 (OV25120247) - 金級 - 加入日期: 2025-12-21
+    │       └── 簡韻琳 (OV25120360) - 金級 - 加入日期: 2025-12-29
+    │           ├── (空缺)
+    │           └── 鄭庭芳 (OV25120361) - 銀級 - 加入日期: 2025-12-29
+    └── 葉艷秋 (OV25120054) - 金級 - 加入日期: 2025-12-13
+        ├── 陳美綺 (TW26010119) - VIP - 加入日期: 2026-01-15
+        │   ├── 陳美綺 (TW26010120) - VIP - 加入日期: 2026-01-15
+        │   │   ├── 吳育蘭 (OV25120240) - 鑽石 - 加入日期: 2025-12-20
+        │   │   │   ├── 吳育蘭 (OV25120241) - 白金 - 加入日期: 2025-12-20
+        │   │   │   │   ├── 陳雍 (OV25120243) - 金級 - 加入日期: 2025-12-20
+        │   │   │   │   │   ├── 張財通 (OV25120244) - 白金 - 加入日期: 2025-12-20
+        │   │   │   │   │   │   ├── 張財通 (OV25120245) - 白金 - 加入日期: 2025-12-20
+        │   │   │   │   │   │   └── 張財通 (OV25120246) - 白金 - 加入日期: 2025-12-20
+        │   │   │   │   │   └── (空缺)
+        │   │   │   │   └── (空缺)
+        │   │   │   └── 吳育蘭 (OV25120242) - 金級 - 加入日期: 2025-12-20
+        │   │   │       ├── (空缺)
+        │   │   │       └── 陳美蓁 (TW26010062) - 金級 - 加入日期: 2026-01-14
+        │   │   │           ├── 陳美蓁 (TW26010106) - VIP - 加入日期: 2026-01-15
+        │   │   │           └── 葉絲綸 (TW26010085) - VIP - 加入日期: 2026-01-15
+        │   │   └── 石秋月 (TW26010126) - VIP - 加入日期: 2026-01-15
+        │   └── 林珈羽 (TW26010121) - VIP - 加入日期: 2026-01-15
+        └── 黃怡潔 (OV25120248) - 白金 - 加入日期: 2025-12-21
+            ├── 黃怡潔 (OV25120249) - 白金 - 加入日期: 2025-12-21
+            └── 黃怡潔 (OV25120250) - 白金 - 加入日期: 2025-12-21
+                ├── 陳嘉容 (OV25120251) - 白金 - 加入日期: 2025-12-21
+                │   ├── 陳嘉容 (OV25120252) - 白金 - 加入日期: 2025-12-21
+                │   └── 陳嘉容 (OV25120253) - 白金 - 加入日期: 2025-12-21
+                └── 吳岱庭 (OV25120352) - 金級 - 加入日期: 2025-12-29
+                    ├── 鄭春梅 (TW26010167) - VIP - 加入日期: 2026-01-14
+                    └── 吳旻蔚 (TW26010166) - 銀級 - 加入日期: 2026-01-14
+    `;
+
+    // --- 2. 邏輯區 (Logic) ---
+
+    // 智能解析器 (自動判斷格式)
+    function parseData(text) {
         const lines = text.split('\n').filter(line => line.trim() !== '');
         let root = { children: [] };
         let stack = [root];
 
         lines.forEach(line => {
-            const contentIndex = line.indexOf('【');
+            // 計算縮排
+            const contentIndex = line.search(/[^ \t│├└─]/);
             if (contentIndex === -1) return;
-
             const level = Math.floor(contentIndex / 4);
-            const content = line.substring(contentIndex);
-            const regex = /【(.*?)】\s*\((.*?)\)\s*-\s*(.*?)\s*-\s*加入:\s*(.*)/;
-            const match = content.match(regex);
 
+            const content = line.substring(contentIndex);
+            
+            // 判斷是哪種格式 (有沒有【】)
+            let match;
             let nodeData = { name: content, id: "", rank: "", date: "", children: [] };
+
+            if (content.includes('【')) {
+                // 王木榮格式
+                match = content.match(/【(.*?)】\s*\((.*?)\)\s*-\s*(.*?)\s*-\s*加入:\s*(.*)/);
+            } else {
+                // 葉艷秋格式
+                match = content.match(/(.*?)\s*\((.*?)\)\s*-\s*(.*?)\s*-\s*加入日期:\s*(.*)/);
+            }
+
             if (match) {
-                nodeData.name = match[1];
-                nodeData.id = match[2];
-                nodeData.rank = match[3];
-                nodeData.date = match[4];
+                nodeData.name = match[1].trim();
+                nodeData.id = match[2].trim();
+                nodeData.rank = match[3].trim();
+                nodeData.date = match[4].trim();
+            } else if (content.includes("空缺")) {
+                nodeData.name = "空缺";
+                nodeData.rank = "emp";
             }
 
             while (stack.length > level + 1) stack.pop();
@@ -367,33 +429,34 @@
     // 渲染 HTML
     function renderTree(node, isRoot = false) {
         if (!node.children || node.children.length === 0) return '';
-
         let html = '<ul>';
         node.children.forEach(child => {
+            // 顏色判斷
             let colorClass = '';
-            if (child.rank.includes('鑽石')) colorClass = 'dia';
-            else if (child.rank.includes('白金')) colorClass = 'pla';
-            else if (child.rank.includes('金級')) colorClass = 'gold';
-            else if (child.rank.includes('銀級')) colorClass = 'sil';
-            else if (child.rank.includes('VIP')) colorClass = 'vip';
+            const r = child.rank;
+            if (r.includes('鑽石')) colorClass = 'dia';
+            else if (r.includes('白金')) colorClass = 'pla';
+            else if (r.includes('金級')) colorClass = 'gold';
+            else if (r.includes('銀級')) colorClass = 'sil';
+            else if (r.includes('VIP')) colorClass = 'vip';
+            else if (r === 'emp') colorClass = 'emp';
 
-            // 判斷是否有子節點
+            // 狀態
             const hasChildren = child.children && child.children.length > 0;
-            // 預設全部折疊 (除了第一層)
-            const initialState = isRoot ? '' : 'hidden'; 
             const toggleIcon = hasChildren ? (isRoot ? '−' : '+') : '';
             const emptyClass = hasChildren ? '' : 'empty';
-
-            // 統計子節點數量
-            const childCount = hasChildren ? `<span class="count">${child.children.length} 下線</span>` : '';
+            const childCount = hasChildren ? `<span class="count">${child.children.length}</span>` : '';
+            // 預設展開狀態：王木榮的第一層預設展開，其他折疊
+            const initialState = isRoot ? '' : 'hidden'; 
 
             html += `
                 <li>
                     <div class="node-content" onclick="toggleNode(this)">
                         <span class="toggle-btn ${emptyClass}">${toggleIcon}</span>
-                        <span class="rank-tag ${colorClass}">${child.rank}</span>
+                        <span class="rank-tag ${colorClass}">${child.rank === 'emp' ? '空缺' : child.rank}</span>
                         <span class="name">${child.name}</span>
                         <span class="id">${child.id}</span>
+                        <span class="date">${child.date}</span>
                         ${childCount}
                     </div>
                     ${hasChildren ? `<div class="${initialState}">` + renderTree(child, false) + `</div>` : ''}
@@ -404,39 +467,51 @@
         return html;
     }
 
-    // 折疊功能
+    // --- 3. 互動功能 (Interact) ---
+
+    // 切換分頁
+    function switchTab(tabId, btnElement) {
+        // 隱藏所有內容
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        // 顯示選定內容
+        document.getElementById(tabId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    // 折疊節點
     function toggleNode(element) {
         const nextDiv = element.nextElementSibling;
         const iconSpan = element.querySelector('.toggle-btn');
-        
-        if (nextDiv) { // 只有當有子節點時才動作
+        if (nextDiv) {
             nextDiv.classList.toggle('hidden');
-            if (nextDiv.classList.contains('hidden')) {
-                iconSpan.textContent = '+';
-            } else {
-                iconSpan.textContent = '−';
-            }
+            iconSpan.textContent = nextDiv.classList.contains('hidden') ? '+' : '−';
         }
     }
 
-    // 全部展開
+    // 全部展開 (只針對當前可見的 Tab)
     function expandAll() {
-        document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
-        document.querySelectorAll('.toggle-btn:not(.empty)').forEach(btn => btn.textContent = '−');
+        const activeTab = document.querySelector('.tab-content.active');
+        activeTab.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+        activeTab.querySelectorAll('.toggle-btn:not(.empty)').forEach(btn => btn.textContent = '−');
     }
 
-    // 全部折疊
+    // 全部折疊 (只針對當前可見的 Tab)
     function collapseAll() {
-        // 先選取所有應該被隱藏的容器 (排除最外層)
-        const allGroups = document.querySelectorAll('#tree-root > ul > li > div, #tree-root > ul > li > div div');
-        allGroups.forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.toggle-btn:not(.empty)').forEach(btn => btn.textContent = '+');
+        const activeTab = document.querySelector('.tab-content.active');
+        // 選擇該分頁下所有可折疊區塊 (排除第一層)
+        activeTab.querySelectorAll('.tree > ul > li > div div').forEach(el => el.classList.add('hidden'));
+        activeTab.querySelectorAll('.toggle-btn:not(.empty)').forEach(btn => btn.textContent = '+');
     }
 
-    // 初始化
-    const treeData = buildTreeFromText(rawData);
-    // 這裡我們傳入 true 代表是根節點呼叫，預設第一層是展開的
-    document.getElementById('tree-root').innerHTML = renderTree(treeData, true);
+    // --- 4. 初始化 ---
+    const treeWang = parseData(rawDataWang);
+    const treeYeh = parseData(rawDataYeh);
+
+    // 渲染兩個樹狀圖 (true 代表是根目錄，預設展開第一層)
+    document.getElementById('tree-wang').innerHTML = renderTree(treeWang, true);
+    document.getElementById('tree-yeh').innerHTML = renderTree(treeYeh, true);
 
 </script>
 
